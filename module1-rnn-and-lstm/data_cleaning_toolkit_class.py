@@ -10,10 +10,16 @@ class data_cleaning_toolkit(object):
         for a text generation model, specifically for the LSTM.
         """
         
+        # TODO: provide descriptions of each variable
         self.sequences = None
         self.next_char = None
-        self.chars = None
+        self.n_features = None
+        self.unique_chars = None
         self.maxlen = None
+        self.char_int = None
+        self.int_char = None
+        self.sequences = None
+        self.next_char = None
     
     def clean_data(self, doc):
         """
@@ -48,7 +54,7 @@ class data_cleaning_toolkit(object):
         # apply case normalization 
         return doc.lower()   
     
-    def create_char_sequenes(self, data, maxlen = 20, step = 5):
+    def create_char_sequences(self, data, maxlen = 20, step = 5):
         """
         Creates numerically encoded text sequences for model input and encoded chars 
         for what the model should predict next. 
@@ -87,24 +93,23 @@ class data_cleaning_toolkit(object):
         
         # Encode Data as Chars
 
-        # Gather all text 
-        # Why? 1. See all possible characters 2. For training / splitting later
+        # join all text data into a single string 
         text = " ".join(data)
 
-        # Unique Characters
-        chars = list(set(text))
+        # get unique characters
+        self.unique_chars = list(set(text))
         
         # our text gen model will treat every unique char as a possible feature to predict
-        self.n_features = len(chars)
+        self.n_features = len(self.unique_chars)
 
         # Lookup Tables
         # keys are chars
         # vals are integers
-        self.char_int = {c:i for i, c in enumerate(chars)}
+        self.char_int = {c:i for i, c in enumerate(self.unique_chars)}
 
         # keys are integers
         # vals are chars
-        self.int_char = {i:c for i, c in enumerate(chars)} 
+        self.int_char = {i:c for i, c in enumerate(self.unique_chars)} 
 
         # we will encore our text by taking a character and representing it by 
         # the index that we have assigned to it in our char_int dictionary 
@@ -124,12 +129,10 @@ class data_cleaning_toolkit(object):
             next_char.append(encoded[i + maxlen])
 
         # we know we have this many samples 
-        print('sequences: ', len(sequences))
+        print('Created {0} sequences.'.format(len(sequences)))
         
         self.sequences = sequences
         self.next_char = next_char
-        self.chars = chars
-
 
     def create_X_and_Y(self):
         """
@@ -148,11 +151,11 @@ class data_cleaning_toolkit(object):
         n_seqs = len(self.sequences)
         
         # this is the number of features in the doc-term matrix that we are about to create 
-        n_unique_chars = len(self.chars) 
+        n_unique_chars = len(self.unique_chars) 
         
         # Create shape for x and y 
-        x_dims = (len(self.sequences), self.maxlen, len(self.chars))
-        y_dims = (len(self.sequences),len(self.chars))
+        x_dims = (len(self.sequences), self.maxlen, len(self.unique_chars))
+        y_dims = (len(self.sequences),len(self.unique_chars))
 
         # create data containers for x and y 
         # default values will all be zero ( i.e. look up docs for np.zeros() )
