@@ -12,6 +12,7 @@ notebook = "*"
 tensorflow = "==2.4.0"
 scikit-learn = "*"
 keras = "*"
+scikit-image = "*"
 
 [dev-packages]
 
